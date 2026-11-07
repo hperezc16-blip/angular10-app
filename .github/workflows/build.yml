@@ -8,7 +8,7 @@ on:
 jobs:
   sonarqube:
     name: SonarQube
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
@@ -19,6 +19,19 @@ jobs:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 14
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm install --legacy-peer-deps
+      - name: Build
+        working-directory: frontend
+        run: npx ng build
+      - name: Test
+        working-directory: frontend
+        run: npx ng test --watch=false --browsers=ChromeHeadlessCI --code-coverage
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@4d1dc0c91ee400dcf8a6dddf2f705ac36542e304 # v8.4.0
         env:
